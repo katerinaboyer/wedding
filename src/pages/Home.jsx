@@ -249,40 +249,6 @@ export default function Home() {
     };
   }, []);
 
-  function drawDog(ctx, cfg, s, sprites) {
-    if (!sprites.ready || !sprites.labRun) return;
-  
-    const screenX = 110;
-    const scale = 1.4; // 🔥 DOG SCALE — try 1.3–1.6
-    const fw = 48;
-    const fh = 32;
-  
-    const dw = fw * scale;
-    const dh = fh * scale;
-  
-    // move dog's baseline to half its current vertical offset
-    const y = cfg.groundY - Math.round(dh / 2);
-  
-    const speed = Math.abs(s.vx);
-    const frame =
-      speed > 0.12 ? Math.floor((s.t / 6) % 8) : 0;
-  
-    drawSheetFrame(
-      ctx,
-      sprites.labRun,
-      frame,
-      fw,
-      fh,
-      Math.round(screenX),
-      Math.round(y),
-      Math.round(dw),
-      Math.round(dh)
-    );
-  
-    // tail wag removed — keep dog static for now
-  }
-  
-
   // --- Main loop ---
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -358,7 +324,8 @@ export default function Home() {
         // pickup logical size should match how it's drawn (champagne is larger)
         let pSize = 56;
         if (p.type === 'champagne') pSize = Math.round(56 * 1.5); // larger collision for champagne
-        else if (p.type === 'cake') pSize = Math.round(56 * 1.3);
+        else if (p.type === 'cake') pSize = Math.round(56 * 1.56); // increased 20%
+        else if (p.type === 'bouquet') pSize = Math.round(56 * 1.2); // increased 20%
 
         const pLeft = px - Math.round(pSize / 2);
         const pTop = cfg.groundY - pSize + 18; // match groundInset in drawPickups
@@ -615,6 +582,54 @@ for (let i = 0; i < 14; i++) {
   fill(ctx, 0, 0, W, 10, "rgba(0,0,0,0.03)");
 }
 
+function drawDog(ctx, cfg, s, sprites) {
+  if (!sprites.ready || !sprites.labRun) return;
+
+  // Fixed on-screen position (camera moves, dog stays)
+  const screenX = 110;
+  const scale = 1.4; // dog size
+  const fw = 48;
+  const fh = 32;
+
+  const dw = fw * scale;
+  const dh = fh * scale;
+
+  // move dog's baseline to half its current vertical offset
+  const y = cfg.groundY - Math.round(dh / 2);
+
+  const speed = Math.abs(s.vx);
+  const frame = speed > 0.12 ? Math.floor((s.t / 6) % 8) : 0;
+
+  // Decide facing direction
+  const facingLeft = s.vx < -0.05;
+
+  ctx.save();
+
+  if (facingLeft) {
+    // Flip horizontally around the dog's center
+    const cx = screenX + dw / 2;
+    ctx.translate(cx, 0);
+    ctx.scale(-1, 1);
+    ctx.translate(-cx, 0);
+  }
+
+  drawSheetFrame(
+    ctx,
+    sprites.labRun,
+    frame,
+    fw,
+    fh,
+    Math.round(screenX),
+    Math.round(y),
+    Math.round(dw),
+    Math.round(dh)
+  );
+
+  ctx.restore();
+
+  // tail wag removed — keep dog static to match requested style
+}
+
 function drawPickups(ctx, cfg, s, sprites) {
   if (!sprites.ready) return;
 
@@ -629,7 +644,8 @@ function drawPickups(ctx, cfg, s, sprites) {
     // size per-type so visuals and collision match
     let drawSize = baseSize;
     if (p.type === 'champagne') drawSize = Math.round(baseSize * 1.5);
-    else if (p.type === 'cake') drawSize = Math.round(baseSize * 1.3);
+    else if (p.type === 'cake') drawSize = Math.round(baseSize * 1.56); // increased 20%
+    else if (p.type === 'bouquet') drawSize = Math.round(baseSize * 1.2); // increased 20%
 
     const drawX = x - Math.round(drawSize / 2);
     const drawY = cfg.groundY - drawSize + groundInset;
