@@ -47,8 +47,6 @@ export default function Home() {
     fireworks: [],
   });
 
-  const [reachedUI, setReachedUI] = useState(false);
-
   // audio context for short UI sounds (sparkle on pickup)
   const audioRef = useRef(null);
   const bridalAudioRef = useRef(null);
@@ -381,7 +379,6 @@ export default function Home() {
       // Ceremony trigger
       if (!s.reachedCeremony && s.playerX >= cfg.ceremonyX) {
         s.reachedCeremony = true;
-        setReachedUI(true);
         spawnFireworkBurst(s, cfg.W * 0.65, 110);
         spawnFireworkBurst(s, cfg.W * 0.35, 90);
         try { playBridal(); } catch (e) {}
@@ -402,7 +399,6 @@ if (!s.fadeStarted && within25pxOfBride) {
 
   // mark ceremony reached for other visuals + UI
   s.reachedCeremony = true;
-  setReachedUI(true);
 
   try { playBridal(); } catch (e) {}
 
@@ -743,54 +739,6 @@ function drawCeremony(ctx, cfg, s, sprites) {
   );
 }
 
-function drawDog(ctx, cfg, s, sprites) {
-  if (!sprites.ready || !sprites.labRun) return;
-
-  // Fixed on-screen position (camera moves, dog stays)
-  const screenX = 110;
-  const scale = 1.4; // dog size
-  const fw = 48;
-  const fh = 32;
-
-  const dw = fw * scale;
-  const dh = fh * scale;
-
-  // move dog's baseline to half its current vertical offset
-  const y = cfg.groundY - Math.round(dh / 2);
-
-  const speed = Math.abs(s.vx);
-  const frame = speed > 0.12 ? Math.floor((s.t / 6) % 8) : 0;
-
-  // Decide facing direction
-  const facingLeft = s.vx < -0.05;
-
-  ctx.save();
-
-  if (facingLeft) {
-    // Flip horizontally around the dog's center
-    const cx = screenX + dw / 2;
-    ctx.translate(cx, 0);
-    ctx.scale(-1, 1);
-    ctx.translate(-cx, 0);
-  }
-
-  drawSheetFrame(
-    ctx,
-    sprites.labRun,
-    frame,
-    fw,
-    fh,
-    Math.round(screenX),
-    Math.round(y),
-    Math.round(dw),
-    Math.round(dh)
-  );
-
-  ctx.restore();
-
-  // tail wag removed — keep dog static to match requested style
-}
-
 
 
 function drawSheetFrame(ctx, sheet, frameIndex, fw, fh, dx, dy, dw, dh) {
@@ -822,26 +770,6 @@ function shade(hex, amt) {
   const toHex = (n) => n.toString(16).padStart(2, "0");
   return `#${toHex(rr)}${toHex(gg)}${toHex(bb)}`;
 }
-
-function drawMushroom(ctx, x, y) {
-  // stem
-  fill(ctx, x + 2, y + 5, 3, 4, "#e7dfcf");
-  // cap (red-orange)
-  fill(ctx, x, y + 2, 7, 4, "#e07b3a");
-  // spots
-  fill(ctx, x + 2, y + 3, 1, 1, "#fff2d8");
-  fill(ctx, x + 5, y + 4, 1, 1, "#fff2d8");
-}
-
-function drawFlower(ctx, x, y) {
-  // stem
-  fill(ctx, x + 3, y + 4, 1, 4, "#2f7c5a");
-  // petals (pale)
-  fill(ctx, x + 2, y + 2, 3, 3, "#f7f0ff");
-  // center (gold)
-  fill(ctx, x + 3, y + 3, 1, 1, "#f1d36a");
-}
-
 
 function drawPine(ctx, x, y, base) {
   // trunk
