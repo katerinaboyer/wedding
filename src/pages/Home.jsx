@@ -323,9 +323,9 @@ export default function Home() {
         // pickup logical size matches drawPickups size
         // pickup logical size should match how it's drawn (champagne is larger)
         let pSize = 56;
-        if (p.type === 'champagne') pSize = Math.round(56 * 1.5); // larger collision for champagne
+        if (p.type === 'champagne') pSize = Math.round(56 * 1.8); // larger collision for champagne
         else if (p.type === 'cake') pSize = Math.round(56 * 1.56); // increased 20%
-        else if (p.type === 'bouquet') pSize = Math.round(56 * 1.2); // increased 20%
+        else if (p.type === 'bouquet') pSize = Math.round(56 * 1.5); // increased further
 
         const pLeft = px - Math.round(pSize / 2);
         const pTop = cfg.groundY - pSize + 18; // match groundInset in drawPickups
@@ -414,9 +414,9 @@ if (!s.fadeStarted && within25pxOfBride) {
 
 {/* Mobile controls (larger, centered, fixed to bottom) */}
   <div className="fixed bottom-6 left-0 right-0 flex justify-center z-40">
-  <div className="flex gap-6 items-center">
+  <div className="flex gap-8 items-center">
     <button
-      className="select-none h-48 w-48 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-6xl font-extrabold text-slate-900 pixel-control"
+      className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control"
       onPointerDown={press("left")}
       onPointerUp={release("left")}
       onPointerCancel={release("left")}
@@ -427,7 +427,7 @@ if (!s.fadeStarted && within25pxOfBride) {
     </button>
 
     <button
-      className="select-none h-48 w-48 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-6xl font-extrabold text-slate-900 pixel-control"
+      className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control"
       onPointerDown={press("right")}
       onPointerUp={release("right")}
       onPointerCancel={release("right")}
@@ -643,9 +643,9 @@ function drawPickups(ctx, cfg, s, sprites) {
     const x = Math.round(worldToScreen(p.x, s.camX));
     // size per-type so visuals and collision match
     let drawSize = baseSize;
-    if (p.type === 'champagne') drawSize = Math.round(baseSize * 1.5);
+    if (p.type === 'champagne') drawSize = Math.round(baseSize * 1.8); // increased
     else if (p.type === 'cake') drawSize = Math.round(baseSize * 1.56); // increased 20%
-    else if (p.type === 'bouquet') drawSize = Math.round(baseSize * 1.2); // increased 20%
+    else if (p.type === 'bouquet') drawSize = Math.round(baseSize * 1.5); // increased further
 
     const drawX = x - Math.round(drawSize / 2);
     const drawY = cfg.groundY - drawSize + groundInset;
