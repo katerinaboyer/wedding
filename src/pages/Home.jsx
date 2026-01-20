@@ -149,49 +149,23 @@ export default function Home() {
   // --- Play bridal chorus when ceremony reached ---
   const playBridal = async () => {
     try {
-      // prefer bundled import if available
-      if (typeof bridalChorus === 'string' && bridalChorus.length) {
-        try {
-          if (!bridalAudioRef.current) {
-            bridalAudioRef.current = new Audio(bridalChorus);
-            bridalAudioRef.current.preload = 'auto';
-          }
-          bridalAudioRef.current.currentTime = 0;
-          bridalAudioRef.current.play().catch(() => {});
-          return;
-        } catch (e) {
-          // fallback to fetching candidates below
-        }
+      // Initialize Audio element with bundled import
+      if (!bridalAudioRef.current) {
+        bridalAudioRef.current = new Audio(bridalChorus);
+        bridalAudioRef.current.preload = 'auto';
+        bridalAudioRef.current.volume = 0.5; // set volume to 50%
       }
-      if (bridalAudioRef.current) {
-        bridalAudioRef.current.currentTime = 0;
-        bridalAudioRef.current.play().catch(() => {});
-        return;
-      }
-
-      const candidates = [
-        '/assets/sounds/bridalchorus.mp3',
-        `${process.env.PUBLIC_URL}/assets/sounds/bridalchorus.mp3`,
-        '/bridalchorus.mp3',
-        `${process.env.PUBLIC_URL}/bridalchorus.mp3`,
-      ];
-
-      for (const url of candidates) {
-        try {
-          const res = await fetch(url, { method: 'HEAD' });
-          if (res && res.ok) {
-            const audio = new Audio(url);
-            audio.preload = 'auto';
-            bridalAudioRef.current = audio;
-            audio.play().catch(() => {});
-            return;
-          }
-        } catch (e) {
-          // try next
-        }
+      
+      // Reset and play
+      bridalAudioRef.current.currentTime = 0;
+      const playPromise = bridalAudioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('Audio playback failed:', err);
+        });
       }
     } catch (e) {
-      // ignore audio errors
+      console.warn('Bridal chorus error:', e);
     }
   };
 
@@ -246,6 +220,43 @@ export default function Home() {
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
+    };
+  }, []);
+
+  // --- Touch controls (tap left/right half of screen) ---
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleTouchStart = (e) => {
+      // Get canvas position and dimensions
+      const rect = canvas.getBoundingClientRect();
+      const canvasCenterX = rect.left + rect.width / 2;
+
+      for (const touch of e.touches) {
+        if (touch.clientX < canvasCenterX) {
+          // Left half: move left
+          inputRef.current.left = true;
+        } else {
+          // Right half: move right
+          inputRef.current.right = true;
+        }
+      }
+    };
+
+    const handleTouchEnd = (e) => {
+      // If no touches remain, release both
+      if (e.touches.length === 0) {
+        inputRef.current.left = false;
+        inputRef.current.right = false;
+      }
+    };
+
+    canvas.addEventListener("touchstart", handleTouchStart);
+    canvas.addEventListener("touchend", handleTouchEnd);
+    return () => {
+      canvas.removeEventListener("touchstart", handleTouchStart);
+      canvas.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
