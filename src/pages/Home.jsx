@@ -418,16 +418,16 @@ if (!s.fadeStarted && within25pxOfBride) {
 
         <div className="mt-4 relative overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm touch-none pixel-panel">
 
-          <div className="p-3">
-            <canvas ref={canvasRef} className="block w-full h-auto" />
+          <div className="p-3 select-none touch-none">
+            <canvas ref={canvasRef} className="block w-full h-auto select-none touch-none" style={{touchAction: 'manipulation'}} />
           </div>
         </div>
 
 {/* Mobile controls (larger, centered, fixed to bottom) */}
-  <div className="fixed bottom-6 left-0 right-0 flex justify-center z-40">
+  <div className="fixed bottom-6 left-0 right-0 flex justify-center z-40 select-none">
   <div className="flex gap-8 items-center">
     <button
-      className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control"
+      className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
       onPointerDown={press("left")}
       onPointerUp={release("left")}
       onPointerCancel={release("left")}
@@ -438,7 +438,7 @@ if (!s.fadeStarted && within25pxOfBride) {
     </button>
 
     <button
-      className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control"
+      className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
       onPointerDown={press("right")}
       onPointerUp={release("right")}
       onPointerCancel={release("right")}
