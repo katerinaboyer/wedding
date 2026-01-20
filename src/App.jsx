@@ -1,8 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import Travel from './pages/Travel';
-import Accomodations from './pages/Accomodations';
 import Event from './pages/Event';
+import Rsvp from './pages/Rsvp.jsx';
 import './App.css';
 
 function App() {
@@ -11,10 +11,10 @@ function App() {
       <div className="App">
         <nav>
           <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/event">Event Schedule</Link></li>
-            <li><Link to="/travel">Travel</Link></li>
-            <li><Link to="/accomodations">Accomodations</Link></li>
+            <li><NavLink to="/">Home</NavLink></li>
+            <li><NavLink to="/event">Schedule</NavLink></li>
+            <li><NavLink to="/travel">Travel</NavLink></li>
+            <li><NavLink to="/rsvp">RSVP</NavLink></li>
           </ul>
         </nav>
 
@@ -22,7 +22,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/event" element={<Event />} />
           <Route path="/travel" element={<Travel />} />
-          <Route path="/accomodations" element={<Accomodations />} />
+          <Route path="/rsvp" element={<Rsvp />} />
         </Routes>
       </div>
     </Router>
