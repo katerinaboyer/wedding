@@ -10,13 +10,13 @@ function Travel() {
 
             <h3 className="mt-4">Air Travel</h3>
             <ul>
-              <li>Albany International Airport — ~1 hour 15 minutes drive</li>
-              <li>Newark Liberty International Airport — ~2 hours 15 minutes drive</li>
-              <li>LaGuardia Airport — ~2 hours 15 minutes drive</li>
+              <li>Albany International Airport ~1 hour 15 minutes drive</li>
+              <li>Newark Liberty International Airport ~2 hours 15 minutes drive</li>
+              <li>LaGuardia Airport ~2 hours 15 minutes drive</li>
             </ul>
 
             <h3 className="mt-4">Amtrak</h3>
-            <p>The nearest Amtrak station is in Hudson, NY (approx. 40 minutes drive to the venue).</p>
+            <p>The nearest Amtrak station is in Hudson, NY ~40 minutes drive to the venue.</p>
           </div>
         </section>
 
@@ -25,8 +25,8 @@ function Travel() {
           <div className="readable-font">
             <p>We are working on potential room blocks at nearby hotels. Feel free to peruse potential stays and AirBnbs for this area.</p>
             <ul>
-              <li><a href="https://scribnerslodge.com/">Scribner's Lodge</a> — ~5 minutes from venue</li>
-              <li><a href="https://www.bluebirdhotels.com/hotels/the-hunter">Hunter Lodge</a> — ~5 minutes from venue</li>
+              <li><a href="https://scribnerslodge.com/">Scribner's Lodge</a> ~5 minutes from venue</li>
+              <li><a href="https://www.bluebirdhotels.com/hotels/the-hunter">Hunter Lodge</a> ~5 minutes from venue</li>
               <li><a href="https://www.airbnb.com/">AirBnbs</a></li>
             </ul>
           </div>

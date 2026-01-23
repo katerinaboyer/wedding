@@ -130,6 +130,12 @@ export default function Home() {
       if (!Ctx) return;
       if (!audioRef.current) audioRef.current = new Ctx();
       const ctx = audioRef.current;
+      
+      // Resume audio context on iOS (required for user-initiated audio)
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.type = "triangle";
@@ -142,7 +148,7 @@ export default function Home() {
       o.start();
       o.stop(ctx.currentTime + 0.3);
     } catch (e) {
-      // ignore
+      console.warn('Sparkle sound error:', e);
     }
   };
 
@@ -154,15 +160,23 @@ export default function Home() {
         bridalAudioRef.current = new Audio(bridalChorus);
         bridalAudioRef.current.preload = 'auto';
         bridalAudioRef.current.volume = 0.5; // set volume to 50%
+        bridalAudioRef.current.crossOrigin = 'anonymous'; // iOS compatibility
+        
+        // iOS: load audio in response to user gesture
+        bridalAudioRef.current.load();
       }
       
       // Reset and play
       bridalAudioRef.current.currentTime = 0;
       const playPromise = bridalAudioRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn('Audio playback failed:', err);
-        });
+        playPromise
+          .then(() => {
+            console.log('Bridal chorus playing');
+          })
+          .catch((err) => {
+            console.warn('Audio playback failed:', err);
+          });
       }
     } catch (e) {
       console.warn('Bridal chorus error:', e);
@@ -232,6 +246,11 @@ export default function Home() {
       // Get canvas position and dimensions
       const rect = canvas.getBoundingClientRect();
       const canvasCenterX = rect.left + rect.width / 2;
+
+      // Initialize audio context on first touch (iOS requirement)
+      if (audioRef.current && audioRef.current.state === 'suspended') {
+        audioRef.current.resume().catch(() => {});
+      }
 
       for (const touch of e.touches) {
         if (touch.clientX < canvasCenterX) {
@@ -406,20 +425,19 @@ if (!s.fadeStarted && within25pxOfBride) {
   const release = (dir) => () => (inputRef.current[dir] = false);
 
   return (
-    <main className="pixel-home min-h-screen bg-stone-50 px-4 py-6 pb-32 overflow-x-hidden">
-      <div className="mx-auto w-full overflow-x-hidden">
-        <header className="text-center pt-16">
-          <h1 className="pixel-title font-serif text-3xl mx-auto block center">Katerina &amp; Jack</h1>
-          <p className="mt-3 text-xs font-medium tracking-wide text-slate-700 typewriter">
-            <span>{typedPrompt}</span>
-            <span className="tw-caret" aria-hidden="true">█</span>
-          </p>
-        </header>
+    <main className="pixel-home min-h-screen bg-stone-50 py-6 pb-32 overflow-x-hidden">
+      <header className="text-center pt-16 px-4">
+        <h1 className="pixel-title font-serif text-3xl mx-auto block center">Katerina &amp; Jack</h1>
+        <p className="mt-3 text-xs font-medium tracking-wide text-slate-700 typewriter">
+          <span>{typedPrompt}</span>
+          <span className="tw-caret" aria-hidden="true">█</span>
+        </p>
+      </header>
 
-        <div className="mt-4 relative overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm touch-none pixel-panel">
+      <div className="mt-4 relative overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm touch-none pixel-panel w-full">
 
-          <div className="p-3 select-none touch-none">
-            <canvas ref={canvasRef} className="block w-full h-auto select-none touch-none" style={{touchAction: 'manipulation'}} />
+        <div className="p-3 select-none touch-none">
+          <canvas ref={canvasRef} className="block w-full h-auto select-none touch-none" style={{touchAction: 'manipulation'}} />
           </div>
         </div>
 
@@ -451,13 +469,12 @@ if (!s.fadeStarted && within25pxOfBride) {
 </div>
 
 
-        <p className="mt-3 text-center text-xs text-slate-500">
-          Desktop: use ←/→ or A/D
-        </p>
-        <p className="mt-2 text-center text-xs text-slate-600 readable-font">
-          September 19, 2026 · Hotel Lilien, 6629 Route 23A, Tannersville, NY 12485
-        </p>
-      </div>
+      <p className="mt-3 text-center text-xs text-slate-500 px-4">
+        Desktop: use ←/→ or A/D
+      </p>
+      <p className="mt-2 text-center text-xs text-slate-600 readable-font px-4">
+        September 19, 2026 · Hotel Lilien, 6629 Route 23A, Tannersville, NY 12485
+      </p>
     </main>
   );
 }
