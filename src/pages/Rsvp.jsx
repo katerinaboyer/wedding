@@ -5,7 +5,7 @@ function Rsvp() {
         <h1 className="text-2xl font-semibold mb-4">RSVP</h1>
         <section className="info-window rounded-lg p-6">
           <div className="readable-font">
-            <p>RSVP details coming soon.</p>
+            <p>RSVP coming soon.</p>
           </div>
         </section>
       </div>
