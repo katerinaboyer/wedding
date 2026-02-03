@@ -18,7 +18,6 @@ function Event() {
               <strong>Ceremony</strong>
               <div>Details to follow</div>
             </div>
-
             <div>
               <strong>Dinner & Reception</strong>
               <div>Details to follow</div>
