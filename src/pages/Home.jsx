@@ -52,8 +52,7 @@ export default function Home() {
   const bridalAudioRef = useRef(null);
 
   // typewriter prompt state
-  const [typedPrompt, setTypedPrompt] = useState("");
-  const PROMPT_TEXT = 'This pup has a job to do! Fetch what\'s needed and find the couple before they say, "I do"';
+  const [typedPrompt, setTypedPrompt] = useState("");  const [essentialReady, setEssentialReady] = useState(false);  const PROMPT_TEXT = 'Hijinks, you have a job to do! Fetch what\'s needed and find the couple before they say, "I do"';
 
   const cfg = useMemo(
     () => ({
@@ -77,33 +76,95 @@ export default function Home() {
     []
   );
 
-  // --- Load images ---
+  // --- Load images (staged for faster initial render) ---
   useEffect(() => {
-    const load = (src) =>
-      new Promise((res) => {
+    let mounted = true;
+    let idleHandle = null;
+
+    const loadImage = async (src) => {
+      // Prefer createImageBitmap for faster decoding when available
+      try {
+        if (typeof createImageBitmap === 'function') {
+          const res = await fetch(src);
+          const blob = await res.blob();
+          return await createImageBitmap(blob);
+        }
+      } catch (e) {
+        // fall back to Image
+      }
+      return new Promise((res) => {
         const img = new Image();
         img.src = src;
         img.onload = () => res(img);
       });
+    };
 
-    Promise.all([
-      load(labRunSheet),
-      load(pickupChampagne),
-      load(pickupCake),
-      load(couple),
-      load(pickupRing),
-      load(pickupBouquet),
-    ]).then(([labRun, champagne, cake, couple, ring, bouquet]) => {
-      spritesRef.current = {
-        labRun,
-        champagne,
-        cake,
-        couple,
-        ring,
-        bouquet,
-        ready: true,
-      };
-    });
+    // Load essentials first so the scene appears quickly
+    (async () => {
+      try {
+        const labRun = await loadImage(labRunSheet);
+        const coupleImg = await loadImage(couple);
+        if (!mounted) return;
+
+        spritesRef.current.labRun = labRun;
+        spritesRef.current.couple = coupleImg;
+
+        // mark essential assets ready so the UI can render immediately
+        spritesRef.current.ready = true;
+        setEssentialReady(true);
+
+        // Load non-critical assets during idle time
+        const loadRest = async () => {
+          try {
+            const champagne = await loadImage(pickupChampagne);
+            const cake = await loadImage(pickupCake);
+            const ring = await loadImage(pickupRing);
+            const bouquet = await loadImage(pickupBouquet);
+            if (!mounted) return;
+            Object.assign(spritesRef.current, { champagne, cake, ring, bouquet });
+          } catch (e) {
+            // continue even if some assets fail
+          }
+
+          // Prefetch bridal chorus audio (won't play until user gesture)
+          try {
+            bridalAudioRef.current = new Audio(bridalChorus);
+            bridalAudioRef.current.preload = 'auto';
+          } catch (e) {
+            /* ignore */
+          }
+        };
+
+        if ('requestIdleCallback' in window) {
+          idleHandle = requestIdleCallback(loadRest, { timeout: 2000 });
+        } else {
+          setTimeout(loadRest, 800);
+        }
+      } catch (e) {
+        // If essentials fail, fall back to loading all assets concurrently
+        try {
+          const toLoad = await Promise.all([
+            loadImage(labRunSheet),
+            loadImage(pickupChampagne),
+            loadImage(pickupCake),
+            loadImage(couple),
+            loadImage(pickupRing),
+            loadImage(pickupBouquet),
+          ]);
+          if (!mounted) return;
+          const [labRun, champagne, cake, coupleImg, ring, bouquet] = toLoad;
+          spritesRef.current = { labRun, champagne, cake, couple: coupleImg, ring, bouquet, ready: true };
+          setEssentialReady(true);
+        } catch (err) {
+          // give up gracefully
+        }
+      }
+    })();
+
+    return () => {
+      mounted = false;
+      if (idleHandle && 'cancelIdleCallback' in window) cancelIdleCallback(idleHandle);
+    };
   }, []);
 
   // --- Typewriter effect for the header prompt ---
@@ -194,11 +255,11 @@ export default function Home() {
 
       const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
       const rect = parent.getBoundingClientRect();
-      // ensure game fills available width but never shrinks past a small-phone width
-      const MIN_PHONE_W = 320; // smallest phone width to preserve legibility
+      // ensure game fills available width
+      const MIN_PHONE_W = 280; // smallest phone width to preserve legibility
       const minScale = MIN_PHONE_W / cfg.W;
       const maxScaleByWidth = rect.width / cfg.W;
-      const maxScaleByHeight = (window.innerHeight - 220) / cfg.H;
+      const maxScaleByHeight = (window.innerHeight - 220) / cfg.H; // height constraint to avoid overflowing
       const scale = Math.max(minScale, Math.min(maxScaleByWidth, maxScaleByHeight));
       const cssW = Math.floor(cfg.W * scale);
       const cssH = Math.floor(cfg.H * scale);
@@ -206,6 +267,7 @@ export default function Home() {
       canvas.style.width = `${cssW}px`;
       canvas.style.height = `${cssH}px`;
 
+      // Keep internal logical size fixed (scaled by CSS) and use DPR for crisp pixels
       canvas.width = Math.floor(cfg.W * dpr);
       canvas.height = Math.floor(cfg.H * dpr);
 
@@ -426,9 +488,10 @@ if (!s.fadeStarted && within25pxOfBride) {
 
   return (
     <main className="pixel-home min-h-screen bg-stone-50 py-6 pb-32 overflow-x-hidden">
-      <header className="text-center pt-16 px-4">
-        <h1 className="pixel-title font-serif text-3xl mx-auto block center">Katerina &amp; Jack</h1>
-        <p className="mt-3 text-xs font-medium tracking-wide text-slate-700 typewriter">
+      <header className="text-center pt-16 px-4 w-full">
+        <h1 className="pixel-title font-serif text-3xl mx-auto block center mb-16">Katerina &amp; Jack</h1>
+        <br></br>
+        <p className="mt-12 text-xs font-medium tracking-wide text-slate-700 typewriter">
           <span>{typedPrompt}</span>
           <span className="tw-caret" aria-hidden="true">█</span>
         </p>
@@ -436,37 +499,45 @@ if (!s.fadeStarted && within25pxOfBride) {
 
       <div className="mt-4 relative overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm touch-none pixel-panel w-full">
 
-        <div className="p-3 select-none touch-none">
-          <canvas ref={canvasRef} className="block w-full h-auto select-none touch-none" style={{touchAction: 'manipulation'}} />
+        {!essentialReady && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-30">
+            <div className="text-sm font-medium">Loading — Preparing the scene</div>
+          </div>
+        )}
+
+        <div className="p-3 select-none touch-none relative">
+          <div className="game-wrapper flex justify-center">
+            <canvas ref={canvasRef} className="game-canvas select-none touch-none block" style={{touchAction: 'manipulation'}} />
+          </div>
+
+          {/* Mobile controls (centered on game screen) */}
+          <div className="absolute inset-0 flex justify-center items-center z-40 select-none pointer-events-none">
+            <div className="flex gap-8 items-center pointer-events-auto">
+              <button
+                className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
+                onPointerDown={press("left")}
+                onPointerUp={release("left")}
+                onPointerCancel={release("left")}
+                onPointerLeave={release("left")}
+                aria-label="Move left"
+              >
+                ◀
+              </button>
+
+              <button
+                className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
+                onPointerDown={press("right")}
+                onPointerUp={release("right")}
+                onPointerCancel={release("right")}
+                onPointerLeave={release("right")}
+                aria-label="Move right"
+              >
+                ▶
+              </button>
+            </div>
           </div>
         </div>
-
-{/* Mobile controls (larger, centered, fixed to bottom) */}
-  <div className="fixed bottom-6 left-0 right-0 flex justify-center z-40 select-none">
-  <div className="flex gap-8 items-center">
-    <button
-      className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
-      onPointerDown={press("left")}
-      onPointerUp={release("left")}
-      onPointerCancel={release("left")}
-      onPointerLeave={release("left")}
-      aria-label="Move left"
-    >
-      ◀
-    </button>
-
-    <button
-      className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
-      onPointerDown={press("right")}
-      onPointerUp={release("right")}
-      onPointerCancel={release("right")}
-      onPointerLeave={release("right")}
-      aria-label="Move right"
-    >
-      ▶
-    </button>
-  </div>
-</div>
+      </div>
 
 
       <p className="mt-3 text-center text-xs text-slate-500 px-4">

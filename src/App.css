@@ -166,10 +166,9 @@ main.pixel-home header h1.pixel-title {
   text-shadow: 3px 3px 0 var(--accent-dark);
   font-size: 28px;
   margin: 0;
-  display: inline-block;
+  display: block;
   text-align: center;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
 }
 
 @media (max-width: 480px) {
@@ -248,14 +247,16 @@ main.pixel-home header h1.pixel-title {
   color: #0f172a;
 }
 .dress-window {
-  background: linear-gradient(180deg, var(--butter), #f6dd6f);
-  border: 2px solid #e0c85a;
-  box-shadow: 6px 6px 0 0 rgba(15,23,42,0.9);
+  background: #fffef8;
+  border: 1px solid #efe6cf;
+  box-shadow: 4px 4px 0 0 rgba(15,23,42,0.6);
+  padding: 20px;
 }
 .info-window {
   background: #fffef8;
   border: 1px solid #efe6cf;
   box-shadow: 4px 4px 0 0 rgba(15,23,42,0.6);
+  padding: 20px;
 }
 
 /* Readable font stack for event content (not 8-bit) */
@@ -264,6 +265,55 @@ main.pixel-home header h1.pixel-title {
   line-height: 1.4;
   color: #0f172a;
   font-size: 15px;
+}
+
+/* Photo gallery (masonry-style with 2 columns) */
+.photo-grid {
+  column-count: 2;
+  column-gap: 24px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  -webkit-column-fill: balance;
+  column-fill: balance;
+}
+.photo-item {
+  display: inline-block; /* required for column flow */
+  width: 100%;
+  background: #ffffff;
+  padding: 10px; /* inner white border */
+  border: 8px solid #ffffff; /* polaroid-like white frame */
+  box-shadow: 8px 8px 0 0 rgba(15,23,42,0.6); /* chunky pixel shadow */
+  margin: 0 0 20px;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  box-sizing: border-box;
+}
+.photo-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+.photo-item .caption {
+  margin-top: 8px;
+  font-size: 12px;
+  text-align: center;
+  color: #334155;
+}
+
+@media (max-width: 640px) {
+  .photo-grid {
+    column-count: 1;
+    column-gap: 16px;
+  }
+  .photo-item {
+    padding: 8px;
+    border-width: 6px;
+    box-shadow: 6px 6px 0 0 rgba(15,23,42,0.5);
+    margin-bottom: 16px;
+  }
 }
 
 @media (max-width: 640px) {
