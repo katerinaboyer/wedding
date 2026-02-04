@@ -14,7 +14,6 @@ import bridalChorus from "../assets/sounds/bridalchorus.mp3";
 export default function Home() {
   const canvasRef = useRef(null);
   const bgCanvasRef = useRef(null);
-  const touchRef = useRef(null);
   const rafRef = useRef(null);
   
 
@@ -325,41 +324,43 @@ export default function Home() {
 
   // --- Touch controls (tap left/right half of screen) ---
   useEffect(() => {
-    const touchArea = touchRef.current;
-    if (!touchArea) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
     const handleTouchStart = (e) => {
-      e.preventDefault();
-      initAudio(); // Initialize audio on first touch
+      // Get canvas position and dimensions
+      const rect = canvas.getBoundingClientRect();
+      const canvasCenterX = rect.left + rect.width / 2;
 
-      const touch = e.touches[0];
-      const screenWidth = window.innerWidth;
+      // Initialize audio context on first touch (iOS requirement)
+      initAudio();
 
-      if (touch.clientX < screenWidth / 2) {
-        inputRef.current.left = true;
-        inputRef.current.right = false;
-      } else {
-        inputRef.current.left = false;
-        inputRef.current.right = true;
+      for (const touch of e.touches) {
+        if (touch.clientX < canvasCenterX) {
+          // Left half: move left
+          inputRef.current.left = true;
+        } else {
+          // Right half: move right
+          inputRef.current.right = true;
+        }
       }
     };
 
     const handleTouchEnd = (e) => {
-      e.preventDefault();
+      // If no touches remain, release both
       if (e.touches.length === 0) {
         inputRef.current.left = false;
         inputRef.current.right = false;
       }
     };
 
-    touchArea.addEventListener("touchstart", handleTouchStart, { passive: false });
-    touchArea.addEventListener("touchend", handleTouchEnd, { passive: false });
-    touchArea.addEventListener("touchcancel", handleTouchEnd, { passive: false });
-
+    canvas.addEventListener("touchstart", handleTouchStart);
+    canvas.addEventListener("touchend", handleTouchEnd);
+    canvas.addEventListener("touchcancel", handleTouchEnd);
     return () => {
-      touchArea.removeEventListener("touchstart", handleTouchStart);
-      touchArea.removeEventListener("touchend", handleTouchEnd);
-      touchArea.removeEventListener("touchcancel", handleTouchEnd);
+      canvas.removeEventListener("touchstart", handleTouchStart);
+      canvas.removeEventListener("touchend", handleTouchEnd);
+      canvas.removeEventListener("touchcancel", handleTouchEnd);
     };
   }, []);
 
@@ -532,15 +533,6 @@ if (!s.fadeStarted && within25pxOfBride) {
         )}
 
         <div className="p-3 select-none touch-none relative">
-          {/* Touch controls overlay - active only on mobile */}
-          <div
-            id="touch-controls"
-            ref={touchRef}
-            className="absolute inset-0 z-20 md:hidden"
-            aria-hidden="true"
-            style={{ touchAction: "none" }}
-          ></div>
-
           <div className="game-wrapper flex justify-center relative">
             <canvas ref={bgCanvasRef} className="game-background-canvas" style={{ position: 'absolute', zIndex: 0, imageRendering: 'pixelated' }} />
             <canvas ref={canvasRef} className="game-canvas select-none touch-none block" style={{touchAction: 'manipulation', position: 'relative', zIndex: 1}} />
