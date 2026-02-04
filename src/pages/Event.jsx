@@ -16,8 +16,6 @@ function Event() {
 
         <section className="info-window rounded-lg p-6">
           <h2 className="text-lg font-medium mb-3">Saturday, September 19</h2>
-          <h4 className="text-md font-medium mb-2">Dress Code</h4>
-                    <p className="readable-font">Cocktail Attire - Our celebration will be held mainly outdoors, keep that in mind when considering your dress.</p>
           <div className="readable-font space-y-2">
             <div>
               <strong>4:00 PM - Welcome Cocktails</strong>
@@ -26,9 +24,11 @@ function Event() {
               <strong>5:00 - Ceremony</strong>
             </div>
             <div>
-              <strong>Cocktails, Dinner, and Dancing to follow</strong>
+              <strong>Dinner and Dancing to follow</strong>
             </div>
           </div>
+                    <h4 className="text-md font-medium mb-2">Dress Code</h4>
+                    <p className="readable-font">Cocktail Attire - Our celebration will be held mainly outdoors; keep that in mind when considering your dress.</p>
         </section>
 
         {/* Event information window */}

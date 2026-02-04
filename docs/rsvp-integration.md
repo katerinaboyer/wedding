@@ -32,7 +32,7 @@ Security/Privacy:
 
 Testing locally:
 - Create a local .env file in the project root with:
-  REACT_APP_RSVP_INVITEES_URL="https://docs.google.com/spreadsheets/d/SHEET_ID/gviz/tq?tqx=out:csv&sheet=Sheet1"
+  REACT_APP_RSVP_INVITEES_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTnFOLHkK9qvvXqUK7atxT26WAbtxF-vPDvpcIEoUEXJVzFianKmykJXz0SJtIWlxLdTRaEn59p-mGU/pub?gid=0&single=true&output=csv"
   REACT_APP_RSVP_SUBMIT_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTnFOLHkK9qvvXqUK7atxT26WAbtxF-vPDvpcIEoUEXJVzFianKmykJXz0SJtIWlxLdTRaEn59p-mGU/pub?gid=0&single=true&output=csv"
 - Restart the dev server after changing .env
 

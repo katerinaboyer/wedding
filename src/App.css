@@ -321,3 +321,24 @@ main.pixel-home header h1.pixel-title {
     padding: 14px;
   }
 }
+
+/* Game wrapper and canvas sizing */
+.game-wrapper { display: flex; justify-content: center; }
+.game-canvas { display: block; width: 100%; max-width: 420px; height: auto; }
+@media (min-width: 800px) {
+  .game-canvas { max-width: 360px; }
+}
+@media (max-width: 420px) {
+  /* full-bleed on small phones */
+  .game-canvas { max-width: 100%; }
+}
+
+/* ensure the game wrapper is the positioning context for controls */
+.game-wrapper { position: relative; }
+/* Controls should appear below the canvas, not overlay it. Pull them up slightly so they don't conflict with the window border. */
+.game-controls { position: static; display: flex; justify-content: center; align-items: center; pointer-events: none; margin-top: -6px; padding-bottom: 8px; }
+.game-controls > .flex { pointer-events: auto; }
+@media (min-width: 800px) {
+  /* slightly nudge controls upward on desktop to avoid window border */
+  .game-controls { margin-top: -12px; padding-bottom: 12px; }
+}

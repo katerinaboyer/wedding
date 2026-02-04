@@ -3,6 +3,10 @@ function Travel() {
     <main className="page-panel page-event px-4 py-8">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-semibold mb-4">Getting Here</h1>
+        <div className="readable-font text-xl" style={{ color: 'var(--forest)', fontWeight: '600' }}>
+          <p>Hotel Lilien
+            <br></br>6629 Route 23A Tannersville NY, 12485</p>
+        </div>
 
         <section className="info-window rounded-lg p-6 mb-6">
           <div className="readable-font">

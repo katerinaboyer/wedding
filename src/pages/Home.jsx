@@ -13,6 +13,7 @@ import bridalChorus from "../assets/sounds/bridalchorus.mp3";
 
 export default function Home() {
   const canvasRef = useRef(null);
+  const bgCanvasRef = useRef(null);
   const rafRef = useRef(null);
   
 
@@ -247,7 +248,8 @@ export default function Home() {
   // --- Resize canvas to container (crisp pixels) ---
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const bgCanvas = bgCanvasRef.current;
+    if (!canvas || !bgCanvas) return;
 
     const resize = () => {
       const parent = canvas.parentElement;
@@ -255,25 +257,43 @@ export default function Home() {
 
       const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
       const rect = parent.getBoundingClientRect();
-      // ensure game fills available width
-      const MIN_PHONE_W = 280; // smallest phone width to preserve legibility
+      const MIN_PHONE_W = 280;
       const minScale = MIN_PHONE_W / cfg.W;
-      const maxScaleByWidth = rect.width / cfg.W;
-      const maxScaleByHeight = (window.innerHeight - 220) / cfg.H; // height constraint to avoid overflowing
-      const scale = Math.max(minScale, Math.min(maxScaleByWidth, maxScaleByHeight));
+      const maxScaleByHeight = (window.innerHeight - 220) / cfg.H;
+
+      const isMobile = window.matchMedia('(max-width: 640px)').matches || rect.width <= 420;
+
+      let scale;
+      if (isMobile) {
+        const maxScaleByWidth = rect.width / cfg.W;
+        scale = Math.max(minScale, Math.min(maxScaleByWidth, maxScaleByHeight));
+      } else {
+        const maxScaleByWidth = Math.min(rect.width / cfg.W, 1.15);
+        scale = Math.max(minScale, Math.min(maxScaleByWidth, maxScaleByHeight));
+      }
+
       const cssW = Math.floor(cfg.W * scale);
       const cssH = Math.floor(cfg.H * scale);
 
       canvas.style.width = `${cssW}px`;
       canvas.style.height = `${cssH}px`;
-
-      // Keep internal logical size fixed (scaled by CSS) and use DPR for crisp pixels
       canvas.width = Math.floor(cfg.W * dpr);
       canvas.height = Math.floor(cfg.H * dpr);
 
       const ctx = canvas.getContext("2d");
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.imageSmoothingEnabled = false;
+
+      // Resize background canvas
+      const bgCssW = parent.clientWidth;
+      const bgCssH = cssH;
+      bgCanvas.style.width = `${bgCssW}px`;
+      bgCanvas.style.height = `${bgCssH}px`;
+      bgCanvas.width = Math.floor(bgCssW * dpr);
+      bgCanvas.height = Math.floor(cfg.H * dpr);
+      const bgCtx = bgCanvas.getContext("2d");
+      bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      bgCtx.imageSmoothingEnabled = false;
     };
 
     resize();
@@ -344,9 +364,12 @@ export default function Home() {
   // --- Main loop ---
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const bgCanvas = bgCanvasRef.current;
+    if (!canvas || !bgCanvas) return;
     const ctx = canvas.getContext("2d");
+    const bgCtx = bgCanvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
+    bgCtx.imageSmoothingEnabled = false;
 
     const loop = () => {
       const s = stateRef.current;
@@ -474,6 +497,7 @@ if (!s.fadeStarted && within25pxOfBride) {
 
 
       // Draw
+      drawBackground(bgCtx, cfg, s);
       drawFrame(ctx, cfg, s, sprites);
 
       rafRef.current = requestAnimationFrame(loop);
@@ -506,15 +530,16 @@ if (!s.fadeStarted && within25pxOfBride) {
         )}
 
         <div className="p-3 select-none touch-none relative">
-          <div className="game-wrapper flex justify-center">
-            <canvas ref={canvasRef} className="game-canvas select-none touch-none block" style={{touchAction: 'manipulation'}} />
+          <div className="game-wrapper flex justify-center relative">
+            <canvas ref={bgCanvasRef} className="game-background-canvas" style={{ position: 'absolute', zIndex: 0, imageRendering: 'pixelated' }} />
+            <canvas ref={canvasRef} className="game-canvas select-none touch-none block" style={{touchAction: 'manipulation', position: 'relative', zIndex: 1}} />
           </div>
 
-          {/* Mobile controls (centered on game screen) */}
-          <div className="absolute inset-0 flex justify-center items-center z-40 select-none pointer-events-none">
+<br></br>
+          <div className="game-controls flex justify-center items-center z-40 select-none pointer-events-none mt-4">
             <div className="flex gap-8 items-center pointer-events-auto">
               <button
-                className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
+                className="select-none h-128 w-128 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
                 onPointerDown={press("left")}
                 onPointerUp={release("left")}
                 onPointerCancel={release("left")}
@@ -525,7 +550,7 @@ if (!s.fadeStarted && within25pxOfBride) {
               </button>
 
               <button
-                className="select-none h-64 w-64 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
+                className="select-none h-128 w-128 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
                 onPointerDown={press("right")}
                 onPointerUp={release("right")}
                 onPointerCancel={release("right")}
@@ -552,30 +577,31 @@ if (!s.fadeStarted && within25pxOfBride) {
 
 /* ---------------- Drawing ---------------- */
 
-function drawFrame(ctx, cfg, s, sprites) {
-  const W = cfg.W;
+function drawBackground(ctx, cfg, s) {
+  const W = ctx.canvas.width;
   const H = cfg.H;
+  const gameW = cfg.W;
 
   ctx.clearRect(0, 0, W, H);
-  // Base fill so there are NO gaps
-fill(ctx, 0, 0, W, H, "#6fbf8f");
+  fill(ctx, 0, 0, W, H, "#6fbf8f");
 
-  // --- SKY (short) ---
-  const skyHeight = 160; // 🔥 controls how tall the sky feels (increased to reduce ground area)
+  const skyHeight = 160;
   fill(ctx, 0, 0, W, skyHeight, "#cfeef0");
 
-  // sun (soft circular glow)
-  drawSun(ctx, 36, 36, 34);
+  const sunX = (W - gameW) / 2 + 36;
+  drawSun(ctx, sunX, 36, 34);
 
-  // pixel-clouds with light parallax
   const cloudPositions = [
     { x: 40 - s.camX * 0.06, y: 36, s: 1.0 },
     { x: 180 - s.camX * 0.04, y: 50, s: 1.2 },
     { x: 300 - s.camX * 0.05, y: 28, s: 0.9 },
+    { x: 450 - s.camX * 0.06, y: 42, s: 1.1 },
+    { x: 600 - s.camX * 0.04, y: 30, s: 1.3 },
   ];
-  for (const c of cloudPositions) drawCloudPixel(ctx, (c.x % (W + 200)) - 100, c.y, c.s);
-  
-  // --- DISTANT TREELINE (SPARSE) ---
+  for (const c of cloudPositions) {
+    drawCloudPixel(ctx, ((c.x % (W + 200)) - 100) + (W - gameW) / 2, c.y, c.s);
+  }
+
   const distantTreeY = skyHeight - 54;
   fill(ctx, 0, distantTreeY + 26, W, 42, "#7fbf9a");
 
@@ -586,79 +612,54 @@ fill(ctx, 0, 0, W, H, "#6fbf8f");
 
     drawPine(ctx, x, distantTreeY + (i % 2) * 4, "#6aa882");
   }
-  
 
-  
-  // --- GRASSY WALKING FIELD ---
-  // reduce large flat area further: shrink previous flat region by ~80% (keep minimum)
-  const origFlat = cfg.groundY - (skyHeight + 40);
-  const grassHeight = Math.max(28, Math.round(origFlat * 0.2)); // much smaller flat area
+  const grassHeight = Math.max(28, Math.round((cfg.groundY - (skyHeight + 40)) * 0.2));
   const grassTop = cfg.groundY - grassHeight;
-  const walkColor = "#6aa882"; // shared color for walking background and bottom band
+  const walkColor = "#6aa882";
   fill(ctx, 0, grassTop, W, cfg.groundY - grassTop, walkColor);
 
-  // rolling hills (subtle, pixel-feel)
-  // smaller, lower hills so green doesn't dominate
   drawHill(ctx, -80 - (s.camX * 0.1), cfg.groundY - 40, W + 200, 40, "#7fbf9a");
   drawHill(ctx, -40 - (s.camX * 0.15), cfg.groundY - 20, W + 160, 28, "#6aa882");
 
-  // --- MIDGROUND SHRUBS / BUSHES ---
-for (let i = 0; i < 14; i++) {
-  const x = ((i * 40 - s.camX * 0.28) % (W + 80)) - 40;
-  const y = cfg.groundY - 70 - (i % 3) * 6;
+  for (let i = 0; i < Math.ceil(W / 20); i++) {
+    const x = ((i * 40 - s.camX * 0.28) % (W + 80)) - 40;
+    const y = cfg.groundY - 70 - (i % 3) * 6;
+    fill(ctx, x + 0, y + 10, 10, 8, "#4ea377");
+    fill(ctx, x + 8, y + 6,  12, 10, "#56ad7f");
+    fill(ctx, x + 18, y + 10, 10, 8, "#4ea377");
+    if (i % 4 === 0) fill(ctx, x + 12, y + 12, 3, 2, "#f3a24a");
+  }
 
-  // little bush blobs
-  fill(ctx, x + 0, y + 10, 10, 8, "#4ea377");
-  fill(ctx, x + 8, y + 6,  12, 10, "#56ad7f");
-  fill(ctx, x + 18, y + 10, 10, 8, "#4ea377");
+  fill(ctx, 0, cfg.groundY - 24, W, 24, "#6aa882");
 
-  // tiny autumn pop
-  if (i % 4 === 0) fill(ctx, x + 12, y + 12, 3, 2, "#f3a24a");
-}
-
-
-  // subtle lighter grass path
-  fill(
-    ctx,
-    0,
-    cfg.groundY - 24,
-    W,
-    24,
-    "#6aa882"
-  );
-
-  // narrow bottom band (reduce large dark green area so dog walking zone isn't huge)
   const bottomBand = Math.max(12, Math.round((H - cfg.groundY) * 0.22));
   fill(ctx, 0, cfg.groundY, W, bottomBand, walkColor);
 
-  // --- MIDGROUND TREES (NEW LAYER) ---
-  // Draw these after the grass so tree trunks and lower canopy appear on top
   const midTreeY = skyHeight + 10;
-  const midCount = 9;
-
+  const midCount = Math.ceil(W / 40);
   for (let i = 0; i < midCount; i++) {
     const x = ((i * 70 - s.camX * 0.25) % (W + 140)) - 70;
     const color = i % 3 === 0 ? "#5aa67d" : "#63ad85";
     drawPine(ctx, x, midTreeY + (i % 2) * 6, color);
-    if (i % 4 === 0) {
-      drawPine(ctx, x + 24, midTreeY + 12, color);
-    }
+    if (i % 4 === 0) drawPine(ctx, x + 24, midTreeY + 12, color);
   }
 
-  // --- FOREGROUND TREES ---
   const fgY = cfg.groundY - 180;
-
-  for (let i = 0; i < 11; i++) {
-    const x =
-      ((i * 64 - s.camX * 0.38) % (W + 160)) - 80;
-
+  for (let i = 0; i < Math.ceil(W / 30); i++) {
+    const x = ((i * 64 - s.camX * 0.38) % (W + 160)) - 80;
     const color = i % 3 === 0 ? "#2f7c5a" : "#2e7c5a";
     drawPine(ctx, x, fgY + (i % 2) * 6, color);
-
     if (i % 4 === 0) drawPine(ctx, x + 28, fgY + 14, color);
   }
+}
 
+function drawFrame(ctx, cfg, s, sprites) {
+  const W = cfg.W;
+  const H = cfg.H;
 
+  ctx.clearRect(0, 0, W, H);
+
+  // Game objects are drawn here, background is on a separate canvas
   // Fireflies (daytime subtle)
   for (let i = 0; i < 12; i++) {
     const fx = (i * 44 + (s.t * 0.9)) % W;
