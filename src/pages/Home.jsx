@@ -14,6 +14,7 @@ import bridalChorus from "../assets/sounds/bridalchorus.mp3";
 export default function Home() {
   const canvasRef = useRef(null);
   const bgCanvasRef = useRef(null);
+  const touchRef = useRef(null);
   const rafRef = useRef(null);
   
 
@@ -324,7 +325,7 @@ export default function Home() {
 
   // --- Touch controls (tap left/right half of screen) ---
   useEffect(() => {
-    const touchArea = document.getElementById("touch-controls");
+    const touchArea = touchRef.current;
     if (!touchArea) return;
 
     const handleTouchStart = (e) => {
@@ -534,8 +535,10 @@ if (!s.fadeStarted && within25pxOfBride) {
           {/* Touch controls overlay - active only on mobile */}
           <div
             id="touch-controls"
+            ref={touchRef}
             className="absolute inset-0 z-20 md:hidden"
             aria-hidden="true"
+            style={{ touchAction: "none" }}
           ></div>
 
           <div className="game-wrapper flex justify-center relative">
