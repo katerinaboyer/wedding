@@ -51,6 +51,7 @@ export default function Home() {
   // audio context for short UI sounds (sparkle on pickup)
   const audioRef = useRef(null);
   const bridalAudioRef = useRef(null);
+  const audioInitialized = useRef(false);
 
   // typewriter prompt state
   const [typedPrompt, setTypedPrompt] = useState("");  const [essentialReady, setEssentialReady] = useState(false);  const PROMPT_TEXT = 'Hijinks, you have a job to do! Fetch what\'s needed and find the couple before they say, "I do"';
@@ -185,6 +186,26 @@ export default function Home() {
     return () => timeouts.forEach((t) => clearTimeout(t));
   }, []);
 
+  // --- Unified audio initializer (for mobile) ---
+  const initAudio = () => {
+    if (audioInitialized.current) return;
+    audioInitialized.current = true;
+    
+    // resume web audio context
+    if (audioRef.current && audioRef.current.state === 'suspended') {
+      audioRef.current.resume().catch(() => {});
+    }
+    
+    // preload and unmute HTML audio
+    if (bridalAudioRef.current) {
+      bridalAudioRef.current.load();
+      bridalAudioRef.current.play().then(() => {
+        bridalAudioRef.current.pause();
+        bridalAudioRef.current.currentTime = 0;
+      }).catch(() => {});
+    }
+  };
+
   // --- Audio sparkle for pickups ---
   const playSparkle = () => {
     try {
@@ -301,43 +322,41 @@ export default function Home() {
     return () => window.removeEventListener("resize", resize);
   }, [cfg.W, cfg.H]);
 
-  // --- Keyboard (desktop) ---
-  useEffect(() => {
-    const down = (e) => {
-      if (e.key === "ArrowLeft" || e.key === "a") inputRef.current.left = true;
-      if (e.key === "ArrowRight" || e.key === "d") inputRef.current.right = true;
-    };
-    const up = (e) => {
-      if (e.key === "ArrowLeft" || e.key === "a") inputRef.current.left = false;
-      if (e.key === "ArrowRight" || e.key === "d") inputRef.current.right = false;
-    };
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-    };
-  }, []);
-
-  // --- Touch controls (tap left/right half of screen) ---
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  // --- KtouchArea = document.getElementById('touch-controls');
+    if (!touchArea) return;
 
     const handleTouchStart = (e) => {
-      // Get canvas position and dimensions
-      const rect = canvas.getBoundingClientRect();
-      const canvasCenterX = rect.left + rect.width / 2;
+      e.preventDefault();
+      initAudio(); // Initialize audio on first touch
 
-      // Initialize audio context on first touch (iOS requirement)
-      if (audioRef.current && audioRef.current.state === 'suspended') {
-        audioRef.current.resume().catch(() => {});
+      const touch = e.touches[0];
+      const screenWidth = window.innerWidth;
+      
+      if (touch.clientX < screenWidth / 2) {
+        inputRef.current.left = true;
+        inputRef.current.right = false;
+      } else {
+        inputRef.current.left = false;
+        inputRef.current.right = true;
       }
+    };
 
-      for (const touch of e.touches) {
-        if (touch.clientX < canvasCenterX) {
-          // Left half: move left
-          inputRef.current.left = true;
+    const handleTouchEnd = (e) => {
+      e.preventDefault();
+      if (e.touches.length === 0) {
+        inputRef.current.left = false;
+        inputRef.current.right = false;
+      }
+    };
+
+    touchArea.addEventListener("touchstart", handleTouchStart, { passive: false });
+    touchArea.addEventListener("touchend", handleTouchEnd, { passive: false });
+    touchArea.addEventListener("touchcancel", handleTouchEnd, { passive: false });
+
+    return () => {
+      touchArea.removeEventListener("touchstart", handleTouchStart);
+      touchArea.removeEventListener("touchend", handleTouchEnd);
+      touchArea.removeEventListener("touchcancel
         } else {
           // Right half: move right
           inputRef.current.right = true;
@@ -532,13 +551,20 @@ if (!s.fadeStarted && within25pxOfBride) {
         <div className="p-3 select-none touch-none relative">
           <div className="game-wrapper flex justify-center relative">
             <canvas ref={bgCanvasRef} className="game-background-canvas" style={{ position: 'absolute', zIndex: 0, imageRendering: 'pixelated' }} />
+          {/* Touch controls overlay - active only on mobile */}
+          <div 
+            id="touch-controls" 
+            className="absolute inset-0 z-20 md:hidden"
+            aria-hidden="true"
+          ></div>
+
+          <div className="game-wrapper flex justify-center relative">
+            <canvas ref={bgCanvasRef} className="game-background-canvas" style={{ position: 'absolute', zIndex: 0, imageRendering: 'pixelated' }} />
             <canvas ref={canvasRef} className="game-canvas select-none touch-none block" style={{touchAction: 'manipulation', position: 'relative', zIndex: 1}} />
           </div>
 
-<br></br>
-          <div className="game-controls flex justify-center items-center z-40 select-none pointer-events-none mt-4">
-            <div className="flex gap-8 items-center pointer-events-auto">
-              <button
+          {/* On-screen buttons are now hidden on small screens where touch overlay is active */}
+          <div className="game-controls hidden md:flex justify-center items-center z-1
                 className="select-none h-128 w-128 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
                 onPointerDown={press("left")}
                 onPointerUp={release("left")}
