@@ -782,8 +782,6 @@ function drawPickups(ctx, cfg, s, sprites) {
 // Note: procedural drawRing removed. The ring pickup now uses the imported `ring.png` sprite image.
 
 function drawCeremony(ctx, cfg, s, sprites) {
-
-function drawCeremony(ctx, cfg, s, sprites) {
   if (!sprites.ready || !sprites.couple) return;
 
   const x = worldToScreen(cfg.ceremonyX, s.camX);
