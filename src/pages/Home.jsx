@@ -322,7 +322,9 @@ export default function Home() {
     return () => window.removeEventListener("resize", resize);
   }, [cfg.W, cfg.H]);
 
-  // --- KtouchArea = document.getElementById('touch-controls');
+  // --- Touch controls (tap left/right half of screen) ---
+  useEffect(() => {
+    const touchArea = document.getElementById("touch-controls");
     if (!touchArea) return;
 
     const handleTouchStart = (e) => {
@@ -331,7 +333,7 @@ export default function Home() {
 
       const touch = e.touches[0];
       const screenWidth = window.innerWidth;
-      
+
       if (touch.clientX < screenWidth / 2) {
         inputRef.current.left = true;
         inputRef.current.right = false;
@@ -356,27 +358,7 @@ export default function Home() {
     return () => {
       touchArea.removeEventListener("touchstart", handleTouchStart);
       touchArea.removeEventListener("touchend", handleTouchEnd);
-      touchArea.removeEventListener("touchcancel
-        } else {
-          // Right half: move right
-          inputRef.current.right = true;
-        }
-      }
-    };
-
-    const handleTouchEnd = (e) => {
-      // If no touches remain, release both
-      if (e.touches.length === 0) {
-        inputRef.current.left = false;
-        inputRef.current.right = false;
-      }
-    };
-
-    canvas.addEventListener("touchstart", handleTouchStart);
-    canvas.addEventListener("touchend", handleTouchEnd);
-    return () => {
-      canvas.removeEventListener("touchstart", handleTouchStart);
-      canvas.removeEventListener("touchend", handleTouchEnd);
+      touchArea.removeEventListener("touchcancel", handleTouchEnd);
     };
   }, []);
 
@@ -549,11 +531,9 @@ if (!s.fadeStarted && within25pxOfBride) {
         )}
 
         <div className="p-3 select-none touch-none relative">
-          <div className="game-wrapper flex justify-center relative">
-            <canvas ref={bgCanvasRef} className="game-background-canvas" style={{ position: 'absolute', zIndex: 0, imageRendering: 'pixelated' }} />
           {/* Touch controls overlay - active only on mobile */}
-          <div 
-            id="touch-controls" 
+          <div
+            id="touch-controls"
             className="absolute inset-0 z-20 md:hidden"
             aria-hidden="true"
           ></div>
@@ -563,8 +543,10 @@ if (!s.fadeStarted && within25pxOfBride) {
             <canvas ref={canvasRef} className="game-canvas select-none touch-none block" style={{touchAction: 'manipulation', position: 'relative', zIndex: 1}} />
           </div>
 
-          {/* On-screen buttons are now hidden on small screens where touch overlay is active */}
-          <div className="game-controls hidden md:flex justify-center items-center z-1
+          {/* On-screen buttons are hidden on small screens where touch overlay is active */}
+          <div className="game-controls hidden md:flex justify-center items-center z-10 select-none pointer-events-none mt-4">
+            <div className="flex gap-8 items-center pointer-events-auto">
+              <button
                 className="select-none h-128 w-128 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
                 onPointerDown={press("left")}
                 onPointerUp={release("left")}
