@@ -749,13 +749,9 @@ function drawPickups(ctx, cfg, s, sprites) {
     const drawX = x - Math.round(drawSize / 2);
     const drawY = cfg.groundY - drawSize + groundInset;
 
-    // ring: use generated sprite if available, otherwise fallback to procedural
-    if (p.type === 'ring') {
-      if (sprites.ring && sprites.ring.complete) {
-        ctx.drawImage(sprites.ring, Math.round(drawX), Math.round(drawY - 6), drawSize, drawSize);
-      } else {
-        drawRing(ctx, Math.round(drawX), Math.round(drawY), drawSize);
-      }
+    // ring: use image sprite
+    if (p.type === 'ring' && sprites.ring) {
+      ctx.drawImage(sprites.ring, Math.round(drawX), Math.round(drawY - 6), drawSize, drawSize);
     }
 
     // cake: draw slightly larger
@@ -783,33 +779,9 @@ function drawPickups(ctx, cfg, s, sprites) {
   }
 }
 
-function drawRing(ctx, drawX, drawY, size) {
-  // draw a chunky 8-bit ring made of small blocks
-  const s = Math.max(2, Math.round(size / 12));
-  // simple 5x5 ring pattern (gold)
-  const ringPattern = [
-    [0,1,1,1,0],
-    [1,1,1,1,1],
-    [1,1,0,1,1],
-    [1,1,1,1,1],
-    [0,1,1,1,0]
-  ];
-  ctx.fillStyle = '#f4d06f';
-  for (let ry = 0; ry < ringPattern.length; ry++) {
-    for (let rx = 0; rx < ringPattern[ry].length; rx++) {
-      if (!ringPattern[ry][rx]) continue;
-      ctx.fillRect(drawX + rx * s, drawY + ry * s, s, s);
-    }
-  }
+// Note: procedural drawRing removed. The ring pickup now uses the imported `ring.png` sprite image.
 
-  // small gem (pale blue) above center
-  ctx.fillStyle = '#dff9ff';
-  const gx = drawX + 2 * s;
-  const gy = drawY - Math.round(s * 1.5);
-  ctx.fillRect(gx, gy, s, s);
-  ctx.fillRect(gx - s, gy + s, s, s);
-  ctx.fillRect(gx + s, gy + s, s, s);
-}
+function drawCeremony(ctx, cfg, s, sprites) {
 
 function drawCeremony(ctx, cfg, s, sprites) {
   if (!sprites.ready || !sprites.couple) return;
