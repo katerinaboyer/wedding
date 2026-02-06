@@ -364,15 +364,50 @@ export default function Home() {
     };
   }, []);
 
+  // --- Keyboard controls (arrow keys or A/D) ---
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
+        inputRef.current.left = true;
+      }
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+        inputRef.current.right = true;
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
+        inputRef.current.left = false;
+      }
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+        inputRef.current.right = false;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
   // --- Main loop ---
   useEffect(() => {
     const canvas = canvasRef.current;
     const bgCanvas = bgCanvasRef.current;
     if (!canvas || !bgCanvas) return;
-    const ctx = canvas.getContext("2d");
-    const bgCtx = bgCanvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false });
+    const bgCtx = bgCanvas.getContext("2d", { alpha: false });
     ctx.imageSmoothingEnabled = false;
     bgCtx.imageSmoothingEnabled = false;
+
+    // Cache frequently used values
+    const DOG_SCREEN_X = 110;
+    const DOG_SCALE = 1.4;
+    const DOG_FW = 48;
+    const dogW = DOG_FW * DOG_SCALE;
+    const dogH = DOG_FW * DOG_SCALE;
 
     const loop = () => {
       const s = stateRef.current;
@@ -423,14 +458,9 @@ export default function Home() {
       s.camX = s.camX + s.camV;
 
       // Collect pickups using rectangle collision against dog's on-screen bounds
-      // Dog screen rect
-      const DOG_SCREEN_X = 110;
-      const DOG_SCALE = 1.4;
-      const DOG_FW = 48;
-      const dogW = DOG_FW * DOG_SCALE;
+      // Dog screen rect (use cached values)
       const dogLeft = DOG_SCREEN_X;
       const dogRight = DOG_SCREEN_X + dogW;
-      const dogH = DOG_FW * DOG_SCALE;
       const dogTop = cfg.groundY - Math.round(dogH / 2);
       const dogBottom = dogTop + dogH;
 
@@ -539,10 +569,11 @@ if (!s.fadeStarted && within25pxOfBride) {
           </div>
 
           {/* On-screen buttons are hidden on small screens where touch overlay is active */}
-          <div className="game-controls hidden md:flex justify-center items-center z-10 select-none pointer-events-none mt-4">
+          <div className="game-controls hidden md:flex justify-center items-center z-10 select-none pointer-events-none mt-20">
             <div className="flex gap-8 items-center pointer-events-auto">
               <button
-                className="select-none h-128 w-128 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
+                className="select-none rounded-2xl border-3 border-slate-900 bg-amber-100 shadow-[5px_5px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] font-extrabold text-slate-900 pixel-control touch-none"
+                style={{ width: '90px', height: '90px', fontSize: '32px' }}
                 onPointerDown={press("left")}
                 onPointerUp={release("left")}
                 onPointerCancel={release("left")}
@@ -553,7 +584,8 @@ if (!s.fadeStarted && within25pxOfBride) {
               </button>
 
               <button
-                className="select-none h-128 w-128 rounded-2xl border-4 border-slate-900 bg-amber-100 shadow-[6px_6px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] text-7xl font-extrabold text-slate-900 pixel-control touch-none"
+                className="select-none rounded-2xl border-3 border-slate-900 bg-amber-100 shadow-[5px_5px_0_0_#0f172a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0f172a] font-extrabold text-slate-900 pixel-control touch-none"
+                style={{ width: '90px', height: '90px', fontSize: '32px' }}
                 onPointerDown={press("right")}
                 onPointerUp={release("right")}
                 onPointerCancel={release("right")}
@@ -623,15 +655,6 @@ function drawBackground(ctx, cfg, s) {
 
   drawHill(ctx, -80 - (s.camX * 0.1), cfg.groundY - 40, W + 200, 40, "#7fbf9a");
   drawHill(ctx, -40 - (s.camX * 0.15), cfg.groundY - 20, W + 160, 28, "#6aa882");
-
-  for (let i = 0; i < Math.ceil(W / 20); i++) {
-    const x = ((i * 40 - s.camX * 0.28) % (W + 80)) - 40;
-    const y = cfg.groundY - 70 - (i % 3) * 6;
-    fill(ctx, x + 0, y + 10, 10, 8, "#4ea377");
-    fill(ctx, x + 8, y + 6,  12, 10, "#56ad7f");
-    fill(ctx, x + 18, y + 10, 10, 8, "#4ea377");
-    if (i % 4 === 0) fill(ctx, x + 12, y + 12, 3, 2, "#f3a24a");
-  }
 
   fill(ctx, 0, cfg.groundY - 24, W, 24, "#6aa882");
 
