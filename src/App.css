@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Source+Sans+3:wght@300;400;600&display=swap');
 
+input, textarea, select, button {
+  box-sizing: border-box;
+}
+
 :root {
   --forest: #13482f; /* deep forest green */
   --leaf: #2eaab3; /* baby blue / teal */
@@ -156,7 +160,6 @@ h1, h2, h3, h4 {
 /* Page containers get a pixel panel treatment */
 .page-panel {
   background: var(--panel-bg);
-  border: 6px solid var(--butter);
   box-shadow: 6px 0 0 0 var(--accent-dark);
   padding: 18px;
   image-rendering: pixelated;

@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-do
 import Home from './pages/Home.jsx';
 import Travel from './pages/Travel';
 import Event from './pages/Event';
-import Rsvp from './pages/Rsvp.jsx';
+import Rsvp from './pages/RSVPPage.jsx';
 import Engagement from './pages/Engagement';
 import './App.css';
 

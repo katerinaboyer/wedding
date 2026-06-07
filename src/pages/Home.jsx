@@ -546,7 +546,7 @@ if (!s.fadeStarted && within25pxOfBride) {
   return (
     <main className="pixel-home min-h-screen bg-stone-50 py-6 pb-32 overflow-x-hidden">
       <header className="text-center pt-16 px-4 w-full">
-        <h1 className="pixel-title font-serif text-3xl mx-auto block center mb-16">Katerina &amp; Jack</h1>
+        <h1 className="pixel-title">Katerina &amp; Jack</h1>
         <br></br>
         <p className="mt-12 text-xs font-medium tracking-wide text-slate-700 typewriter">
           <span>{typedPrompt}</span>
