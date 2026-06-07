@@ -55,7 +55,7 @@ serve(async (req: Request) => {
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td style="background:#faf9f7; border-left:3px solid #c9b99e; padding:16px 20px; font-family:'Georgia',serif; font-size:15px; color:#4a3f35; line-height:1.7;">
-              Join us at <strong>${VENUE}</strong> on <strong>${WEDDING_DATE}</strong>.<br>
+              Join us at <strong>${VENUE}</strong> on <strong>${WEDDING_DATE}</strong>.
               Welcome cocktails begin at <strong>${COCKTAIL_TIME}</strong> before the ceremony.<br>
               Visit our <a href="${WEBSITE}" style="color:#8c7059; text-decoration:underline;">website</a> for schedule, accommodations &amp; more.
               ${dietaryNotes ? `<br><br><em>Dietary notes received: ${dietaryNotes}</em>` : ""}
@@ -98,12 +98,6 @@ serve(async (req: Request) => {
               </h1>
 
               <div style="width:36px;height:1px;background:#c9b99e;margin:14px 0;"></div>
-
-              <p style="margin:0 0 24px;font-family:'Helvetica Neue',Arial,sans-serif;
-                         font-size:12px;color:#7a6f66;line-height:1.6;letter-spacing:0.04em;">
-                ${WEDDING_DATE}<br>
-                ${VENUE}
-              </p>
 
               <p style="margin:0 0 18px;font-size:16px;color:#2c2621;line-height:1.6;">
                 Dear <strong>${partyName}</strong>,

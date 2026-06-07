@@ -267,6 +267,9 @@ export default function RSVPPage() {
 
               <div>
                 <label className="readable-font block text-sm font-semibold text-stone-700 mb-2">Notes</label>
+                <p className="readable-font text-xs text-stone-500 mb-2">
+                  Children are welcome! If you're bringing little ones who aren't listed on your invitation, please include their names and ages here so we can plan.
+                </p>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
