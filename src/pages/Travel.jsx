@@ -13,7 +13,7 @@ function Travel() {
             <p><strong>Tannersville, NY 12485</strong></p>
           </div>
           <div className="readable-font mt-3" style={{ color: 'var(--forest)', fontSize: '0.9rem' }}>
-            <p><a href="https://www.hotellilien.com/" className="underline hover:no-underline">Visit Hotel Lilien →</a></p>
+            <p><a href="https://www.hotellilien.com/" className="underline hover:no-underline" target="_blank" rel="noreferrer">Visit Hotel Lilien →</a></p>
           </div>
         </section>
 
